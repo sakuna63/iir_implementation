@@ -1,29 +1,7 @@
-# ファイル内のテキストコンテンツを改行を含まない文字列として取得します
-def extract_file_content_as_flat_string(filename)
-  File.open(filename) do |file|
-    file.read.gsub("\n", '')
-  end
-end
+require "#{__dir__}/lib/fileloader"
 
-# テキストからbodyタグ内部のテキストを抽出します
-def extract_body_content(content)
-  content.match(/<BODY ?>.*?<\/BODY>/)[0]
-end
-
-# テキストからnavigation panelに当たる部分を取り除きます
-def remove_navigation_panel(content)
-  content.gsub(/<!--Navigation Panel-->.*?<!--End of Navigation Panel-->/, '')
-end
-
-# テキストからタグ(<a>,<img>etc..)を取り除きます
-def remove_tags(content)
-  content.gsub(/<.*?>/, '')
-end
-
-# 空白を基準に単語の配列に変換します
-def to_terms(text)
-  text.split(' ')
-end
+PATH_TO_CURRENT_DIR = File.expand_path('..', __FILE__)
+PATH_TO_CHAPS_DIR = "#{PATH_TO_CURRENT_DIR}/../chaps/"
 
 # ファイルネームから大チャプターの数値に変換します
 # ex.
@@ -47,18 +25,12 @@ end
 # term-doc_idのペアを表すクラス
 class Pair < Struct.new(:doc_id, :term); end
 
-PATH_TO_CURRENT_DIR = File.expand_path('..', __FILE__)
-PATH_TO_CHAPS_DIR = "#{PATH_TO_CURRENT_DIR}/chaps/"
 Dir.chdir(PATH_TO_CHAPS_DIR)
 chap_filenames = Dir.glob('*.html')
 
 # ファイルからテキストを抽出して単語の配列に変換するまで〜
 terms = chap_filenames
-  .map {|filename| extract_file_content_as_flat_string(filename)}
-  .map {|content| extract_body_content(content)}
-  .map {|content| remove_navigation_panel(content)}
-  .map {|content| remove_tags(content)}
-  .map {|content| to_terms(content)}
+  .map {|filename| FileLoader.load_as_terms(filename)}
 
 # 単語(term)を文書ID(doc_id)と紐付けたペアの配列に変換するまで〜
 big_chap_nums = chap_filenames.map { |filename| chomp_small_chap_num(filename) }
