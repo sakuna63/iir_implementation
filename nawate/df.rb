@@ -1,4 +1,7 @@
 require "#{__dir__}/lib/calculater"
+require "#{__dir__}/lib/searcher"
 
-term = ARGV[0]
-puts Calculater::df(term)
+terms = Searcher::indexes.map { |index| index.term }
+terms.each do |term|
+  puts "#{term} : #{Calculater::df(term)}"
+end

@@ -5,17 +5,21 @@ PATH_TO_CURRENT_DIR = File.expand_path('..', __FILE__)
 module Searcher
   class << self
     def search(term)
-      index = indexes[term]
+      index = _indexes[term]
       Index.new(term, index[0], index[1])
     end
-
-    private
 
     # インデックスファイルを読み込みます
     # 正確には単語をキー、出現頻度-ポスティングリストをバリューとしたハッシュを作ってます
     def indexes
-      return @indexes unless @indexes.nil?
+      _indexes.map do |index|
+        Index.new(index[0], index[1][0], index[1][1])
+      end
+    end
 
+    private
+
+    def _indexes
       indexes = File.readlines("#{PATH_TO_CURRENT_DIR}/../iir.index").map do |line|
         index = line.split('-')
         posting_list = index[-1].split(',').map(&:to_i)
@@ -23,8 +27,7 @@ module Searcher
         term = index[0..-3].join('-')
         [term, [freq, posting_list]]
       end
-      @indexes = indexes.to_h
-      @indexes
+      indexes.to_h
     end
   end
 end
